@@ -1,0 +1,14 @@
+Ext.ux.grid.column.ActionButtonColumn
+=====================================
+
+#### Render button(s) inside the grid cells.
+
+A simple grid column plugin to render buttons inside a grid cell.
+
+### Features
+
+The button handler will receive three arguments:
+    gridview - can also be used to get a reference to the grid's store
+    rowIndex - the row index
+    colIndex - the column(or cell) index
+
