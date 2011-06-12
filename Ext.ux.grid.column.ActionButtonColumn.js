@@ -1,7 +1,7 @@
 /**
  * @class Ext.ux.grid.column.ActionButtonColumn
  * @extends Ext.grid.column.Column
- * @version 0.1
+ * @version 0.2
  * @author Lucian Lature (lucian.lature@gmail.com)
  
  * <p>A Grid header type which renders a button, or a series of buttons in a grid cell, and offers a scoped click
@@ -14,9 +14,9 @@
  *         storeId:'employeeStore',
  *         fields:['firstname', 'lastname', 'senority', 'dep', 'hired'],
  *         data:[
- *             {firstname:"Michael", lastname:"Scott"},
+ *             {firstname:"Michael", lastname:"Scott", hideEdit: true, iconFire: 'fire2'},
  *             {firstname:"Dwight", lastname:"Schrute"},
- *             {firstname:"Jim", lastname:"Halpert"},
+ *             {firstname:"Jim", lastname:"Halpert", hideFire: true, iconEdit: 'edit2'},
  *             {firstname:"Kevin", lastname:"Malone"},
  *             {firstname:"Angela", lastname:"Martin"}                        
  *         ]
@@ -34,12 +34,14 @@
  *                 header: 'Actions',
  *                 items: [{
  *                     text: 'Edit',
+ *                     iconIndex: 'iconFire',
  *                     handler: function(grid, rowIndex, colIndex) {
  *                         var rec = grid.getStore().getAt(rowIndex);
  *                         alert("Edit " + rec.get('firstname'));
  *                     }
  *                 },{
  *                     text: 'Fire',
+ *                     hideIndex: 'hideEdit',
  *                     handler: function(grid, rowIndex, colIndex) {
  *                         var rec = grid.getStore().getAt(rowIndex);
  *                         alert("Fire " + rec.get('firstname'));
@@ -73,6 +75,8 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
      * @cfg {Array} items An Array which may contain multiple button definitions, each element of which may contain:
      * <div class="mdetail-params"><ul>
      * <li><code>text</code> : String<div class="sub-desc">The button text to be used as innerHTML (html tags are accepted).</div></li>
+     * <li><code>iconIndex</code> : String<div class="sub-desc">Optional, however either iconIndex or iconCls must be configured. Field name of the field of the grid store record that contains css class of the button to show. If configured, shown icons can vary depending of the value of this field.</div></li>
+     * <li><code>hideIndex</code> : String<div class="sub-desc">Optional. Field name of the field of the grid store record that contains hide flag (falsie [null, '', 0, false, undefined] to show, anything else to hide).</div></li>
      * <li><code>handler</code> : Function<div class="sub-desc">A function called when the button is clicked.</div></li>
      * </ul></div>
      */
@@ -98,6 +102,7 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
 
 		// Renderer closure iterates through items creating a button element for each and tagging with an identifying 
         me.renderer = function(v, meta, rec, rowIndex, colIndex, store, view) {
+			
 			//  Allow a configured renderer to create initial value (And set the other values in the "metadata" argument!)
             v = Ext.isFunction(cfg.renderer) ? cfg.renderer.apply(this, arguments)||'' : '';
             
@@ -106,10 +111,13 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
             for (i = 0; i < l; i++) {
                 
                 item = items[i];
+				
                 var nid = Ext.id();
                 var cls = Ext.baseCSSPrefix + 'action-col-button ' + Ext.baseCSSPrefix + 'action-col-button-' + String(i);
+				var iconCls = item.iconIndex ? rec.data[item.iconIndex] : (item.iconCls ? item.iconCls : '');
 				var fun = Ext.bind(item.handler, me, [view, rowIndex, colIndex]);
-                Ext.Function.defer(me.createGridButton, 100, me, [item.text, nid, rec, cls, fun]);
+				var hide = rec.data[item.hideIndex];
+                Ext.Function.defer(me.createGridButton, 100, me, [item.text, nid, rec, cls, fun, hide, iconCls]);
                 
                 v += '<div id="' + nid + '">&#160;</div>';
             }
@@ -117,11 +125,13 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
         };
     },
     
-    createGridButton: function(value, id, record, cls, fn) {
+    createGridButton: function(value, id, record, cls, fn, hide, iconCls) {
         new Ext.Button({
-             text: value,
-             cls: cls,
-			 handler: fn
+            text: value,
+            cls: cls,
+            iconCls: iconCls,
+			hidden: hide,
+			handler: fn
         }).render(Ext.getBody(), id);
         Ext.get(id).remove();
     },
