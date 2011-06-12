@@ -12,7 +12,7 @@
  * ## Code
  *     Ext.create('Ext.data.Store', {
  *         storeId:'employeeStore',
- *         fields:['firstname', 'lastname', 'senority', 'dep', 'hired'],
+ *         fields:['firstname', 'lastname', 'senority', 'dep', 'hired', 'iconEdit', 'iconFire', 'hideEdit', 'hideFire'],
  *         data:[
  *             {firstname:"Michael", lastname:"Scott", hideEdit: true, iconFire: 'fire2'},
  *             {firstname:"Dwight", lastname:"Schrute"},
