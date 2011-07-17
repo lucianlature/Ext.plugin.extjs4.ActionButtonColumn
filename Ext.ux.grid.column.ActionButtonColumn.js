@@ -12,7 +12,7 @@
  * ## Code
  *     Ext.create('Ext.data.Store', {
  *         storeId:'employeeStore',
- *         fields:['firstname', 'lastname', 'senority', 'dep', 'hired', 'iconEdit', 'iconFire', 'hideEdit', 'hideFire'],
+ *         fields:['firstname', 'lastname', 'senority', 'dep', 'hired'],
  *         data:[
  *             {firstname:"Michael", lastname:"Scott", hideEdit: true, iconFire: 'fire2'},
  *             {firstname:"Dwight", lastname:"Schrute"},
@@ -58,7 +58,7 @@
  */
 Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
     
-	extend: 'Ext.grid.column.Column',
+    extend: 'Ext.grid.column.Column',
     alias: ['widget.actionbuttoncolumn'],
     alternateClassName: 'Ext.grid.ActionButtonColumn',
 
@@ -83,7 +83,7 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
     header: '&#160;',
     
     sortable: false,
-
+    btns: [],
     constructor: function(config) {
         
         var me = this,
@@ -92,18 +92,19 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
             l = items.length,
             i,
             item;
-
+            me.btns = new Ext.util.MixedCollection();
         // This is a Container. Delete the items config to be reinstated after construction.
         delete cfg.items;
         me.callParent([cfg]);
 
         // Items is an array property of ActionButtonColumns
         me.items = items;
+        
 
-		// Renderer closure iterates through items creating a button element for each and tagging with an identifying 
+        // Renderer closure iterates through items creating a button element for each and tagging with an identifying 
         me.renderer = function(v, meta, rec, rowIndex, colIndex, store, view) {
-			
-			//  Allow a configured renderer to create initial value (And set the other values in the "metadata" argument!)
+            
+            //  Allow a configured renderer to create initial value (And set the other values in the "metadata" argument!)
             v = Ext.isFunction(cfg.renderer) ? cfg.renderer.apply(this, arguments)||'' : '';
             
             meta.tdCls += ' ' + Ext.baseCSSPrefix + 'action-col-cell';
@@ -111,12 +112,20 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
             for (i = 0; i < l; i++) {
                 
                 item = items[i];
-				
+                
                 var nid = Ext.id();
-                var cls = Ext.baseCSSPrefix + 'action-col-button ' + Ext.baseCSSPrefix + 'action-col-button-' + String(i);
-				var iconCls = item.iconIndex ? rec.data[item.iconIndex] : (item.iconCls ? item.iconCls : '');
-				var fun = Ext.bind(item.handler, me, [view, rowIndex, colIndex]);
-				var hide = rec.data[item.hideIndex];
+                var cls = Ext.baseCSSPrefix + 'action-col-button ' + Ext.baseCSSPrefix + 'action-col-button-' + String(i)+(item.cls ? ' '+item.cls : '');
+                var iconCls = item.iconIndex ? rec.data[item.iconIndex] : (item.iconCls ? item.iconCls : '');
+                var fun = Ext.emptyFn;
+                if (item.handler) {
+                    var context = me;
+                    if (item.context) {
+                        context = item.context;
+                    }
+                    var fun = Ext.bind(item.handler, context, [view, rowIndex, colIndex]);
+                }
+                var hide = rec.data[item.hideIndex];
+                
                 Ext.Function.defer(me.createGridButton, 100, me, [item.text, nid, rec, cls, fun, hide, iconCls]);
                 
                 v += '<div id="' + nid + '">&#160;</div>';
@@ -126,19 +135,23 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
     },
     
     createGridButton: function(value, id, record, cls, fn, hide, iconCls) {
-        new Ext.Button({
+        var btn = new Ext.Button({
             text: value,
             cls: cls,
             iconCls: iconCls,
-			hidden: hide,
-			handler: fn
+            hidden: hide,
+            handler: fn
         }).render(Ext.getBody(), id);
+        this.btns.add(btn);
         Ext.get(id).remove();
     },
 
     destroy: function() {
         delete this.items;
         delete this.renderer;
+        this.btns.each(function(btn){
+           btn.destroy(); 
+        });
         return this.callParent(arguments);
     },
 
@@ -146,7 +159,8 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
         fn.call(scope||this, this);
     },
 
-    // Private override because this cannot function as a Container, and it has an items property which is an Array, NOT a MixedCollection.
+    // Private override because this cannot function as a Container, and it has an items property which is an Array, 
+    // NOT a MixedCollection.
     getRefItems: function() {
         return [];
     }
