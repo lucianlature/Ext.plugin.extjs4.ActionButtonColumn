@@ -119,7 +119,6 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
                         evnts[evntName]=true;
                     }
                 });
-                console.log(evnts);
                 view.addEvents(evnts);
             }
 
@@ -152,7 +151,6 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
                             eventName = item.cls.replace(/[^a-zA-Z]/,'')+'click';
                         }
                         fun = function() {
-                            console.log(eventName);
                             if (eventName != 'actionbuttonclick') {
                                 view.fireEvent('actionbuttonclick', this, view, rowIndex, colIndex);
                             }
