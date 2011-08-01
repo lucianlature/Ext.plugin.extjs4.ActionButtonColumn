@@ -112,7 +112,8 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
                     'actionbuttonclick':true
                 }
                 Ext.Array.each(items, function(btn) {
-                    if (btn.eventName) {
+                    if (btn.handler) { }
+                    else if (btn.eventName) {
                         evnts[btn.eventName] = true;
                     } else if (btn.cls) {
                     	var evntName = btn.cls.replace(/[^a-zA-Z]/,'')+'click';
