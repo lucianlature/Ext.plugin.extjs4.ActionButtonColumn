@@ -47,6 +47,9 @@
  *                         var rec = grid.getStore().getAt(rowIndex);
  *                         alert("Fire " + rec.get('firstname'));
  *                     }
+ *                 },{
+ *                     text: 'Schedule Meeting',
+ *                     eventName: 'scheduleMeeting'
  *                 }]
  *             }
  *         ],
@@ -65,7 +68,7 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
 
     /**
      * @cfg {Function} handler A function called when the button is clicked.
-     * The handler is passed the following parameters:<div class="mdetail-params"><ul>
+     * The handler(or event) is passed the following parameters:<div class="mdetail-params"><ul>
      * <li><code>view</code> : TableView<div class="sub-desc">The owning TableView.</div></li>
      * <li><code>rowIndex</code> : Number<div class="sub-desc">The row index clicked on.</div></li>
      * <li><code>colIndex</code> : Number<div class="sub-desc">The column index clicked on.</div></li>
@@ -78,7 +81,11 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
      * <li><code>text</code> : String<div class="sub-desc">The button text to be used as innerHTML (html tags are accepted).</div></li>
      * <li><code>iconIndex</code> : String<div class="sub-desc">Optional, however either iconIndex or iconCls must be configured. Field name of the field of the grid store record that contains css class of the button to show. If configured, shown icons can vary depending of the value of this field.</div></li>
      * <li><code>hideIndex</code> : String<div class="sub-desc">Optional. Field name of the field of the grid store record that contains hide flag (falsie [null, '', 0, false, undefined] to show, anything else to hide).</div></li>
+     * <li><code>showIndex</code> : String<div class="sub-desc">Optional. This is the polar opposite of hideIndex. Will show this button if the field specified is truethy</div></li>.
+     * <li><code>eventName</code> : String<div class="sub-desc">Optional. This is a unique name for an event that will get created on the parent gridview. (ignored if handler is specified)</div></li>
      * <li><code>handler</code> : Function<div class="sub-desc">A function called when the button is clicked.</div></li>
+     * <li><code>scope</code> : Ref<div class="sub-desc">The scope (<em>this</em>) of the handler function.</div></li>
+     * <li><code>cls</code> : String<div class="sub-desc">cls spefies the class of the button. In addition, if there is no handler or eventName set the class is stripped down to Alpha characters and suffixed with "click" to create an event on the parent gridview</div></li>
      * </ul></div>
      */
     header: '&#160;',
@@ -112,10 +119,11 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
                     'actionbuttonclick':true
                 }
                 Ext.Array.each(items, function(btn) {
-                    if (btn.eventName) {
+                    if (btn.handler) { }
+                    else if (btn.eventName) {
                         evnts[btn.eventName] = true;
                     } else if (btn.cls) {
-                    	var evntName = btn.cls.replace(/[^a-zA-Z]/,'')+'click';
+                        var evntName = btn.cls.replace(/[^a-zA-Z]/,'')+'click';
                         evnts[evntName]=true;
                     }
                 });
@@ -174,15 +182,19 @@ Ext.define('Ext.ux.grid.column.ActionButtonColumn', {
     },
 
     createGridButton: function(value, id, record, cls, fn, hide, iconCls) {
-        var btn = new Ext.Button({
-            text: value,
-            cls: cls,
-            iconCls: iconCls,
-            hidden: hide,
-            handler: fn
-        }).render(Ext.getBody(), id);
-        this.btns.add(btn);
-        Ext.get(id).remove();
+        var target = Ext.get(id);
+        if (target !== null) {
+            var btn = new Ext.Button({
+                text: value,
+                cls: cls,
+                iconCls: iconCls,
+                hidden: hide,
+                handler: fn,
+                renderTo: target.parent()
+            });
+            this.btns.add(btn);
+            Ext.get(id).remove();
+        }
     },
 
     destroy: function() {
