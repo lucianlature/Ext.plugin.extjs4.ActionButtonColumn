@@ -41,6 +41,9 @@ Ext.define('Your.grid',{
 					var rec = grid.getStore().getAt(rowIndex);
                     alert("Report " + rec.get('firstname'));
                 }                
+            },{
+                text: 'Schedule Meeting',
+                eventName: 'scheduleMeeting'
             }]
         }
 
